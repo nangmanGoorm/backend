@@ -39,6 +39,17 @@ jobs:
       - name: Push Image to ECR
         run: docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_IMAGE }}:${{ github.sha }}
 
+      # kube 설치
+      - name: Download kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/v1.18.0/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+
+      # kube 환경변수 설정
+      - name: Add kubectl to PATH
+        run: |
+          sudo mv kubectl /usr/local/bin/
+
       # Update deploy image
       - name: Kubectl update
         run: aws eks update-kubeconfig --region ap-northeast-2 --name goormthon-cluster

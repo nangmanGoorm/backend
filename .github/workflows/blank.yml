@@ -28,14 +28,18 @@ jobs:
           aws-region: ap-northeast-2
           registry: ${{ secrets.ECR_REGISTRY }}
 
-
       - name: Build and push Docker image
         id: build-image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_IMAGE }}:${{ github.sha }}
+          tags: ${{ secrets.ECR_REGISTRY }}:${{ github.sha }}
+        env:
+          aws-region: ap-northeast-2
+          AWS_ACCOUNT_ID: 9oormthoneks
+        # needs the `login-ecr` step to run first
+        needs: login-ecr
 
       - name: Get image digest
         id: image-digest

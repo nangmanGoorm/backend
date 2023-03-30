@@ -50,7 +50,7 @@ jobs:
         run: |
           sudo mv kubectl /usr/local/bin/
 
-      # Update deploy image
+      # Update kubo 구름 클러스터 등록
       - name: Kubectl update
         run: aws eks update-kubeconfig --region ap-northeast-2 --name goormthon-cluster
 
@@ -61,6 +61,10 @@ jobs:
           cd $HOME/.kube
           touch ./config
           echo "${{ secrets.KUBECONFIG }}" > ./config
+
+      # Update kubo 구름 클러스터 등록_2
+      - name: Kubectl update
+        run: aws eks update-kubeconfig --region ap-northeast-2 --name goormthon-cluster
 
       # Update deploy image
       - name: Update deploy image

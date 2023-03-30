@@ -1,0 +1,44 @@
+name: ECR Image Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Build and push Docker image
+        id: build-image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.ECR_IMAGE }}/${{ secrets.ECR_REGISTRY }}:${{ github.sha }}
+
+      - name: Get image digest
+        id: image-digest
+        run: echo "::set-output name=digest::$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.ECR_IMAGE }}/${{ secrets.ECR_REGISTRY }}:${{ github.sha }})"
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Update Deployment
+        run: |
+          kubectl set image deployment/hello-deploy-alb hello-app=${{ secrets.ECR_IMAGE }}/${{ secrets.ECR_REGISTRY }}:${{ github.sha }} -n jeju-senior
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}

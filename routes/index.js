@@ -7,7 +7,7 @@ const bottleRouter = require('./bottle');
 const answerRouter = require('./answer');
 
 router.use('/health-check', (req, res) => {
-  response(res, 200, { status: 'success' })
+  response(res, 200, { status: 'hello' })
 });
 
 router.use('/users', userRouter);

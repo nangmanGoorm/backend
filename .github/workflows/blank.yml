@@ -39,7 +39,6 @@ jobs:
           aws-region: ap-northeast-2
           AWS_ACCOUNT_ID: 9oormthoneks
         # needs the `login-ecr` step to run first
-        needs: login-ecr
 
       - name: Get image digest
         id: image-digest

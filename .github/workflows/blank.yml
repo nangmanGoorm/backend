@@ -20,6 +20,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          aws-region: ap-northeast-2
+          registry: ${{ secrets.ECR_REGISTRY }}
+
 
       - name: Build and push Docker image
         id: build-image
@@ -27,11 +35,11 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.ECR_IMAGE }}/${{ secrets.ECR_REGISTRY }}:${{ github.sha }}
+          tags: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_IMAGE }}:${{ github.sha }}
 
       - name: Get image digest
         id: image-digest
-        run: echo "::set-output name=digest::$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.ECR_IMAGE }}/${{ secrets.ECR_REGISTRY }}:${{ github.sha }})"
+        run: echo "::set-output name=digest::$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_IMAGE }}:${{ github.sha }})"
 
       - name: Install kubectl
         run: |
@@ -40,6 +48,6 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl
       - name: Update Deployment
         run: |
-          kubectl set image deployment/hello-deploy-alb hello-app=${{ secrets.ECR_IMAGE }}/${{ secrets.ECR_REGISTRY }}:${{ github.sha }} -n jeju-senior
+          kubectl set image deployment/hello-deploy-alb hello-app=${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_IMAGE }}:${{ github.sha }} -n jeju-senior
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
